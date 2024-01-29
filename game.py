@@ -1,58 +1,80 @@
-class Games_XO:
-    
-    # Задаем таблицу сетки
-    table = list(range(1,10))
+class TicTacToe:
+    """Класс для представления игры "Крестики-нолики"""
 
-    # Рисуем таблицу сетки
-    def table_grid(table):
-        table = list(range(1,10))
+    def __init__(self) -> None:
+        """Инициализация игровой доски и текущего игрока"""
+        self.board = [[' ' for _ in range(3)] for _ in range(3)]
+        self.current_player = 'X'
 
-        for i in range(3):
-            print ("|", table[0+i*3], "|", table[1+i*3], "|",table[2+i*3], "|")
+    def draw_board(self) -> None:
+        """Отображение игровой доски в терминале"""
+        print('-------------')
+        for row in self.board:
+            print('|', end=' ')
+            for cell in row:
+                print(cell, end=' | ')
+            print('\n-------------')
 
-    # Сделать ход
-    def make_move(step):
-        table = list(range(1,10))
-        valid = False
-        while not valid:
-            value = int(input("Введите номер клетки куда поставить значение " + step +"? "))
-            if value >= 1 and value <= 9:
-                if (str(table[value-1]) not in "XO"):
-                    table[value-1] = step
-                
-        
-                    valid = True
-                else:
-                    print ("Эта клетка занята")
-            else:
-                print("Некорректный ввод!")
+    def make_move(self, row: int, col: int) -> bool:
+        """Проверка валидности хода и установка символа игрока на доску.
+        Args:
+        * row: номер строки.
+        * col: номер столбца.
 
-    # Условия победы
-    def winner(table):
-        win = ((0,1,2),(3,4,5),(6,7,8),(0,3,6),(1,4,7),(2,5,8),(0,4,8),(2,4,6))
-        for x in win:
-            if table[x[0]] == table[x[1]] == table[x[2]]:
-                return table[x[0]]
+        return:
+        True, если ход выполнен успешно,
+        False в противном случае"""
+        if self.board[row][col] == ' ':
+            self.board[row][col] = self.current_player
+            self.current_player = 'O' if self.current_player == 'X' else 'X'
+            return True
         return False
 
-    # Зауск игры
-    def play(table):
-        count = 0
-        win = False
-        while not win:
-            table_grid(table)
-            if count % 2 == 0:
-                make_move("X")
-            else:
-                make_move("O")
-            count += 1
-            if count > 4:
-                m = winner(table)
-                if m:
-                    print (m, "Победил!")
-                    win = True
+    def check_winner(self, player: str) -> bool:
+        """Проверка условий победы для заданного игрока.
+        Args:
+        * player: символ игрока ('X' или 'O').
+
+        return:
+        True, если игрок победил,
+        False в противном случае"""
+        for i in range(3):
+            if self.board[i][0] == self.board[i][1] == self.board[i][2] == player or \
+               self.board[0][i] == self.board[1][i] == self.board[2][i] == player:
+                return True
+
+        if self.board[0][0] == self.board[1][1] == self.board[2][2] == player or \
+           self.board[0][2] == self.board[1][1] == self.board[2][0] == player:
+            return True
+
+        return False
+
+    def play(self) -> None:
+        """Начало игры.
+
+        Игроки по очереди делают ходы до достижения условия победы одним из игроков
+        или объявления ничьи.
+        """
+        while True:
+            self.draw_board()
+            print('Ход игрока', self.current_player)
+            row = int(input('Введите номер строки (0-2): '))
+            col = int(input('Введите номер столбца (0-2): '))
+
+            if row < 0 or row > 2 or col < 0 or col > 2:
+                print('Некорректные координаты! Попробуйте еще раз.')
+                continue
+
+            if self.make_move(row, col):
+                if self.check_winner(self.current_player):
+                    self.draw_board()
+                    print('Игрок', self.current_player, 'победил!')
                     break
-            if count == 9:
-                print ("Ничья!")
-                break
-        table_grid(table)
+
+                if all(cell != ' ' for row in self.board for cell in row):
+                    self.draw_board()
+                    print('Ничья!')
+                    break
+
+            else:
+                print('Клетка уже занята. Попробуйте другую.')
